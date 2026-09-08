@@ -17,7 +17,7 @@ jobs:
       run: |
         sudo dnf -y install dnf-plugins-core
         sudo dnf -y builddep createrepo_c.spec
-        sudo dnf -y install twine pytest
+        sudo dnf -y install pytest
         pip install --upgrade pip
         pip install build scikit-build-core
 
@@ -62,20 +62,3 @@ jobs:
         name: ${{ matrix.arch }}
         path: ./wheelhouse/*.whl
 
-
-  upload_pypi:
-    name: Publish packages to PyPI
-    # only publish packages once everything is successful
-    needs: [build_bdist, build_sdist]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v6
-        with:
-          merge-multiple: true
-          path: dist
-
-      - uses: pypa/gh-action-pypi-publish@v1.13.0
-        with:
-          user: __token__
-          password: ${{secrets.PYPI_API_TOKEN}}
-          # To test: repository_url: https://test.pypi.org/legacy/
