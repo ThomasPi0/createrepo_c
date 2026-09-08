@@ -4,6 +4,14 @@ C implementation of createrepo
 
 Run `createrepo -h` for usage syntax.
 
+## Installing on macOS (Homebrew)
+
+    brew tap ThomasPi0/createrepo_c https://github.com/ThomasPi0/createrepo_c
+    brew install ThomasPi0/createrepo_c/createrepo_c
+
+Each GitHub release ships a prebuilt Apple Silicon bottle (built by the
+`Homebrew Release` workflow); other platforms build from source.
+
 # Devel tips
 
 ## Building

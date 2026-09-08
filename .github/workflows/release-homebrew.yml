@@ -1,0 +1,56 @@
+---
+name: Homebrew Release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+  TAG: ${{ github.event.release.tag_name }}
+  TAP: ${{ github.repository_owner }}/createrepo_c
+
+jobs:
+  bottle:
+    name: Build macOS ARM bottle
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Point formula at the release tarball
+        run: |
+          url="https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${TAG}.tar.gz"
+          sha=$(curl -fsSL "$url" | shasum -a 256 | cut -d' ' -f1)
+          sed -i '' -E "s|^  url .*|  url \"${url}\"|; s|^  sha256 .*|  sha256 \"${sha}\"|" Formula/createrepo_c.rb
+
+      - name: Build, test and bottle
+        run: |
+          brew tap-new --no-git "$TAP"
+          tap_dir="$(brew --repository "$TAP")"
+          cp Formula/createrepo_c.rb "$tap_dir/Formula/"
+          brew install --build-bottle "$TAP/createrepo_c"
+          brew test "$TAP/createrepo_c"
+          brew bottle --json --root-url "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}" "$TAP/createrepo_c"
+          brew bottle --merge --write --no-commit ./*.bottle.json
+          cp "$tap_dir/Formula/createrepo_c.rb" Formula/
+          # brew bottle writes "name--version" locally but the formula expects "name-version"
+          for f in ./*.bottle.tar.gz; do mv "$f" "${f/--/-}"; done
+
+      - name: Upload bottle to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload "$TAG" ./*.bottle.tar.gz --clobber
+
+      - name: Commit formula with bottle
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/createrepo_c.rb
+          git commit -m "Homebrew: release createrepo_c ${TAG} with macOS ARM bottle"
+          git push
