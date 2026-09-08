@@ -2,9 +2,14 @@ class CreaterepoC < Formula
   desc "C implementation of createrepo, builds RPM repository metadata"
   homepage "https://github.com/ThomasPi0/createrepo_c"
   url "https://github.com/ThomasPi0/createrepo_c/archive/refs/tags/2.0.0.tar.gz"
-  sha256 "0000000000000000000000000000000000000000000000000000000000000000"
+  sha256 "f4cf852c3bf1753c2f38748683438398c8e4dd16b3e5f2965894b9f2507fddc6"
   license "GPL-2.0-or-later"
   head "https://github.com/ThomasPi0/createrepo_c.git", branch: "master"
+
+  bottle do
+    root_url "https://github.com/ThomasPi0/createrepo_c/releases/download/2.0.0"
+    sha256 cellar: :any, arm64_sequoia: "e00a33f4db7acdf181d2effe685a6d983e36e2aa5c217ab02acbc064aab5ac3e"
+  end
 
   depends_on "cmake" => :build
   depends_on "pkgconf" => :build
